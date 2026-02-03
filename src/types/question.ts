@@ -1,7 +1,7 @@
 // 题目接口定义
 export interface Question {
   id: string;
-  sentence: string; // 完整句子，其中待填单词用 {answer} 占位符表示
+  sentence: string; // 完整句子，用 首字母+下划线 表示待填单词，如 d_____
   answer: string; // 正确答案（完整单词）
   hint: string; // 提示（首字母）
   translation?: string; // 可选的中文翻译
