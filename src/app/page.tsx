@@ -37,7 +37,7 @@ export default function Home() {
   // 加载数据
   useEffect(() => {
     const loadedPapers = getAllPapers();
-    
+
     // 如果没有数据，加载示例数据
     if (loadedPapers.length === 0) {
       savePaper(sampleQuestionSet);
@@ -46,11 +46,11 @@ export default function Home() {
       saveCurrentPaperId(sampleQuestionSet.id);
     } else {
       setPapers(loadedPapers);
-      
+
       // 尝试恢复上次选择的试卷
       const savedPaperId = getCurrentPaperId();
       const paperExists = savedPaperId && loadedPapers.some(p => p.id === savedPaperId);
-      
+
       if (paperExists) {
         setCurrentPaperId(savedPaperId);
       } else {
@@ -90,13 +90,29 @@ export default function Home() {
       deletePaper(id);
       const updatedPapers = getAllPapers();
       setPapers(updatedPapers);
-      
+
       if (currentPaperId === id) {
         const newPaperId = updatedPapers.length > 0 ? updatedPapers[0].id : null;
         setCurrentPaperId(newPaperId);
         if (newPaperId) {
           saveCurrentPaperId(newPaperId);
         }
+      }
+    }
+  };
+
+  // 批量删除试卷（确认已在调用方处理）
+  const handleDeletePapers = (ids: string[]) => {
+    ids.forEach(id => deletePaper(id));
+    const updatedPapers = getAllPapers();
+    setPapers(updatedPapers);
+
+    // 如果当前试卷被删除，切换到第一个
+    if (currentPaperId && ids.includes(currentPaperId)) {
+      const newPaperId = updatedPapers.length > 0 ? updatedPapers[0].id : null;
+      setCurrentPaperId(newPaperId);
+      if (newPaperId) {
+        saveCurrentPaperId(newPaperId);
       }
     }
   };
@@ -132,6 +148,7 @@ export default function Home() {
         onNewPaper={handleNewPaper}
         onEditPaper={handleEditPaper}
         onDeletePaper={handleDeletePaper}
+        onDeletePapers={handleDeletePapers}
         onRefreshPapers={handleRefreshPapers}
       />
 

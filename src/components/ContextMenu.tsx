@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, Trash2, Share2 } from "lucide-react";
+import { Edit2, Trash2, Share2, CheckSquare } from "lucide-react";
 
 interface ContextMenuProps {
   x: number;
@@ -10,7 +10,9 @@ interface ContextMenuProps {
   onEdit: () => void;
   onDelete: () => void;
   onShare?: () => void;
+  onStartSelect?: () => void;
   onClose: () => void;
+  isMultiSelectMode?: boolean;
 }
 
 export default function ContextMenu({
@@ -19,7 +21,9 @@ export default function ContextMenu({
   onEdit,
   onDelete,
   onShare,
+  onStartSelect,
   onClose,
+  isMultiSelectMode,
 }: ContextMenuProps) {
   useEffect(() => {
     const handleClick = () => onClose();
@@ -68,6 +72,19 @@ export default function ContextMenu({
         >
           <Share2 className="w-4 h-4" />
           分享到社区
+        </button>
+      )}
+      {onStartSelect && !isMultiSelectMode && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onStartSelect();
+            onClose();
+          }}
+          className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2 transition-colors"
+        >
+          <CheckSquare className="w-4 h-4" />
+          多选
         </button>
       )}
       <div className="h-px bg-border my-1" />
