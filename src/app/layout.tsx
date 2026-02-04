@@ -6,6 +6,9 @@ import { DialogProvider } from "@/contexts/DialogContext";
 export const metadata: Metadata = {
   title: "Spark Words - 英语首字母填空练习",
   description: "高考英语首字母填空智能练习平台",
+  icons: {
+    icon: "/ico.ico",
+  },
   viewport: {
     width: "device-width",
     initialScale: 1,

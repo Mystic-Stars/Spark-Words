@@ -190,7 +190,21 @@ export default function Sidebar({
                   </span>
                 </div>
               ) : (
-                <h2 className="text-sm font-medium text-foreground">Papers</h2>
+                <div className="flex items-center gap-2">
+                  <img
+                    src="/ico-light.png"
+                    alt="Logo"
+                    className="w-6 h-6 object-contain block dark:hidden"
+                  />
+                  <img
+                    src="/ico-dark.png"
+                    alt="Logo"
+                    className="w-6 h-6 object-contain hidden dark:block"
+                  />
+                  <h2 className="text-[15px] font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight">
+                    Spark Words
+                  </h2>
+                </div>
               )}
               <div className="flex items-center gap-1">
                 {isMultiSelectMode && (

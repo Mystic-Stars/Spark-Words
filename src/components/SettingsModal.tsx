@@ -774,11 +774,18 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           <div className="space-y-8">
             {/* 标题和简介 */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-zinc-600 dark:text-zinc-400" strokeWidth={2} />
-                </div>
-                <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="flex items-center gap-3 mb-2">
+                <img
+                  src="/ico-light.png"
+                  alt="Spark Words Logo"
+                  className="w-10 h-10 rounded-xl shadow-sm block dark:hidden"
+                />
+                <img
+                  src="/ico-dark.png"
+                  alt="Spark Words Logo"
+                  className="w-10 h-10 rounded-xl shadow-sm hidden dark:block"
+                />
+                <h3 className="text-[18px] font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
                   Spark Words
                 </h3>
               </div>
