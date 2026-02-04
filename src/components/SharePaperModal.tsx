@@ -6,6 +6,7 @@ import { X, Share2, Download, Github, Copy, CheckCircle, FileText } from "lucide
 import { QuestionSet } from "@/types/question";
 import { exportPaperToCommunity, downloadJsonFile } from "@/lib/storage";
 import { generatePRTemplate, getRepoUrl, getContributionGuideUrl } from "@/lib/communityApi";
+import { useDialog } from "@/contexts/DialogContext";
 
 interface SharePaperModalProps {
   isOpen: boolean;
@@ -24,9 +25,15 @@ export default function SharePaperModal({
   const [prTemplate, setPrTemplate] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const handleExport = () => {
+  const { alert } = useDialog();
+
+  const handleExport = async () => {
     if (!author.trim()) {
-      alert("请填写作者名称");
+      await alert({
+        title: "提示",
+        message: "请填写作者名称",
+        variant: "warning",
+      });
       return;
     }
 
@@ -38,10 +45,10 @@ export default function SharePaperModal({
 
     const filename = `${communityPaper.id}.json`;
     downloadJsonFile(communityPaper, filename);
-    
+
     const template = generatePRTemplate(communityPaper);
     setPrTemplate(template);
-    
+
     setStep("export");
   };
 
@@ -151,31 +158,28 @@ export default function SharePaperModal({
                 <div className="grid grid-cols-3 gap-2.5">
                   <button
                     onClick={() => setDifficulty("beginner")}
-                    className={`py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${
-                      difficulty === "beginner"
+                    className={`py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${difficulty === "beginner"
                         ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                         : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    }`}
+                      }`}
                   >
                     初级
                   </button>
                   <button
                     onClick={() => setDifficulty("intermediate")}
-                    className={`py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${
-                      difficulty === "intermediate"
+                    className={`py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${difficulty === "intermediate"
                         ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                         : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    }`}
+                      }`}
                   >
                     中级
                   </button>
                   <button
                     onClick={() => setDifficulty("advanced")}
-                    className={`py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${
-                      difficulty === "advanced"
+                    className={`py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${difficulty === "advanced"
                         ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                         : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    }`}
+                      }`}
                   >
                     高级
                   </button>
@@ -259,7 +263,7 @@ export default function SharePaperModal({
                   </button>
                 </div>
                 <pre className="bg-zinc-50/50 dark:bg-zinc-900/50 p-3.5 rounded-lg text-[12px] overflow-x-auto border border-zinc-200/50 dark:border-zinc-800/50 text-zinc-800 dark:text-zinc-200 font-mono leading-relaxed">
-{prTemplate}
+                  {prTemplate}
                 </pre>
               </div>
 

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { X, FileText, Sparkles, Settings } from "lucide-react";
 import { useEffect } from "react";
+import { useDialog } from "@/contexts/DialogContext";
 
 interface CreatePaperTypeModalProps {
   onClose: () => void;
@@ -17,6 +18,8 @@ export default function CreatePaperTypeModal({
   onSelectAI,
   hasAIConfig,
 }: CreatePaperTypeModalProps) {
+  const { alert } = useDialog();
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -89,27 +92,29 @@ export default function CreatePaperTypeModal({
 
           {/* AI 一键生成 */}
           <button
-            onClick={() => {
+            onClick={async () => {
               if (!hasAIConfig) {
-                alert('请先在设置中配置 AI 服务');
+                await alert({
+                  title: "提示",
+                  message: "请先在设置中配置 AI 服务",
+                  variant: "warning",
+                });
                 return;
               }
               handleClose();
               onSelectAI();
             }}
             disabled={!hasAIConfig}
-            className={`w-full p-5 border-2 rounded-xl transition-all group text-left ${
-              hasAIConfig
+            className={`w-full p-5 border-2 rounded-xl transition-all group text-left ${hasAIConfig
                 ? 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700'
                 : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 opacity-50 cursor-not-allowed'
-            }`}
+              }`}
           >
             <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                hasAIConfig
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 transition-colors ${hasAIConfig
                   ? 'bg-gradient-to-br from-blue-500 to-cyan-500 group-hover:from-blue-600 group-hover:to-cyan-600'
                   : 'bg-zinc-200 dark:bg-zinc-700'
-              }`}>
+                }`}>
                 <Sparkles className={`w-6 h-6 ${hasAIConfig ? 'text-white' : 'text-zinc-400'}`} strokeWidth={2} />
               </div>
               <div className="flex-1">

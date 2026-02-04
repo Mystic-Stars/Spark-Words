@@ -8,6 +8,7 @@ import { QuestionSet } from "@/types/question";
 import ContextMenu from "./ContextMenu";
 import CommunityLibraryModal from "./CommunityLibraryModal";
 import SharePaperModal from "./SharePaperModal";
+import { useDialog } from "@/contexts/DialogContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -46,6 +47,8 @@ export default function Sidebar({
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [selectedPaperIds, setSelectedPaperIds] = useState<Set<string>>(new Set());
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
+
+  const { confirm } = useDialog();
 
   const handleContextMenu = (
     e: React.MouseEvent,
@@ -114,11 +117,19 @@ export default function Sidebar({
   }, [isMultiSelectMode, selectedPaperIds, lastSelectedIndex, papers, currentPaperId, onSelectPaper]);
 
   // 批量删除
-  const handleBatchDelete = useCallback(() => {
+  const handleBatchDelete = useCallback(async () => {
     if (selectedPaperIds.size === 0) return;
 
     const count = selectedPaperIds.size;
-    if (confirm(`确定要删除选中的 ${count} 份试卷吗？此操作不可恢复！`)) {
+    const confirmed = await confirm({
+      title: "批量删除",
+      message: `确定要删除选中的 ${count} 份试卷吗？此操作不可恢复！`,
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       if (onDeletePapers) {
         onDeletePapers(Array.from(selectedPaperIds));
       } else {
@@ -127,7 +138,7 @@ export default function Sidebar({
       }
       handleExitSelectMode();
     }
-  }, [selectedPaperIds, onDeletePapers, onDeletePaper, handleExitSelectMode]);
+  }, [selectedPaperIds, onDeletePapers, onDeletePaper, handleExitSelectMode, confirm]);
 
   // 全选/取消全选
   const handleSelectAll = useCallback(() => {

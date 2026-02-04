@@ -15,6 +15,7 @@ import {
   Save
 } from "lucide-react";
 import { QuestionSet, Question } from "@/types/question";
+import { useDialog } from "@/contexts/DialogContext";
 
 interface EditPaperModalProps {
   paper: QuestionSet;
@@ -37,6 +38,8 @@ export default function EditPaperModal({
   const [questions, setQuestions] = useState<Question[]>([...paper.questions]);
   const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+
+  const { confirm, alert } = useDialog();
 
   // 清理函数：确保关闭时移除所有可能的样式残留
   useEffect(() => {
@@ -73,14 +76,22 @@ export default function EditPaperModal({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) {
-      alert("试卷名称不能为空");
+      await alert({
+        title: "提示",
+        message: "试卷名称不能为空",
+        variant: "warning",
+      });
       return;
     }
 
     if (questions.length === 0) {
-      alert("试卷至少需要一道题目");
+      await alert({
+        title: "提示",
+        message: "试卷至少需要一道题目",
+        variant: "warning",
+      });
       return;
     }
 
@@ -116,10 +127,14 @@ export default function EditPaperModal({
     }
   };
 
-  const handleSaveQuestion = () => {
+  const handleSaveQuestion = async () => {
     if (editingQuestion) {
       if (!editingQuestion.sentence.trim() || !editingQuestion.answer.trim()) {
-        alert("句子和答案不能为空");
+        await alert({
+          title: "提示",
+          message: "句子和答案不能为空",
+          variant: "warning",
+        });
         return;
       }
       setQuestions(questions.map(q =>
@@ -130,12 +145,23 @@ export default function EditPaperModal({
     }
   };
 
-  const handleDeleteQuestion = (questionId: string) => {
+  const handleDeleteQuestion = async (questionId: string) => {
     if (questions.length <= 1) {
-      alert("试卷至少需要保留一道题目");
+      await alert({
+        title: "提示",
+        message: "试卷至少需要保留一道题目",
+        variant: "warning",
+      });
       return;
     }
-    if (confirm("确定要删除这道题目吗？")) {
+    const confirmed = await confirm({
+      title: "删除题目",
+      message: "确定要删除这道题目吗？",
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
+    if (confirmed) {
       setQuestions(questions.filter(q => q.id !== questionId));
       if (expandedQuestionId === questionId) {
         setExpandedQuestionId(null);

@@ -8,6 +8,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { AIConfig, AI_PROVIDER_PRESETS, AIProvider } from "@/types/aiConfig";
 import { saveAIConfig, getAIConfig, getAIConfigByProvider, deleteAIConfig, getAllAIConfigList, toggleAIConfigEnabled } from "@/lib/storage";
 import { testAIConnection } from "@/lib/aiService";
+import { useDialog } from "@/contexts/DialogContext";
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -32,6 +33,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [customModelInput, setCustomModelInput] = useState<string>('');
   const [testingConnection, setTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const { confirm, alert } = useDialog();
 
   // 加载所有 AI 配置
   const loadAllConfigs = () => {
@@ -61,11 +64,11 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       setAiConfig(config);
       setApiKey(config.apiKey || '');
       setApiUrl(config.apiUrl || '');
-      
+
       // 检查是否为预设模型
       const preset = AI_PROVIDER_PRESETS.find(p => p.id === provider);
       const isPresetModel = preset?.models.some(m => m.value === config.model);
-      
+
       if (isPresetModel) {
         setSelectedModel(config.model || '');
         setCustomModelInput('');
@@ -91,7 +94,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   useEffect(() => {
     // 防止背景滚动
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       // 恢复滚动
       document.body.style.overflow = '';
@@ -115,19 +118,19 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   ];
 
   const themeOptions = [
-    { 
-      value: "light" as const, 
-      label: "浅色", 
+    {
+      value: "light" as const,
+      label: "浅色",
       icon: Sun,
     },
-    { 
-      value: "dark" as const, 
-      label: "深色", 
+    {
+      value: "dark" as const,
+      label: "深色",
       icon: Moon,
     },
-    { 
-      value: "system" as const, 
-      label: "系统", 
+    {
+      value: "system" as const,
+      label: "系统",
       icon: Monitor,
     },
   ];
@@ -151,7 +154,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 </div>
                 {/* 按钮组 - 移动端全宽，桌面端固定宽度 */}
                 <div className="grid grid-cols-3 items-center p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg relative w-full md:w-[270px]">
-                  <div 
+                  <div
                     className="absolute bg-white dark:bg-zinc-700 rounded-md transition-all duration-200 ease-out"
                     style={{
                       width: 'calc((100% - 0.5rem) / 3)',
@@ -173,10 +176,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                         }}
                         className={`
                           relative flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-200 w-full touch-manipulation
-                          ${
-                            isSelected
-                              ? "text-zinc-900 dark:text-zinc-100"
-                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                          ${isSelected
+                            ? "text-zinc-900 dark:text-zinc-100"
+                            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
                           }
                         `}
                       >
@@ -193,7 +195,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       case "ai":
         const currentPreset = AI_PROVIDER_PRESETS.find(p => p.id === selectedProvider);
         const currentConfig = allAIConfigs.find(c => c.provider === selectedProvider);
-        
+
         return (
           <div className="space-y-6">
             {/* 已保存的配置列表 */}
@@ -243,9 +245,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                             </span>
                           )}
                           <button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              if (confirm(`确定要删除 ${preset?.name || config.provider} 的配置吗？`)) {
+                              const confirmed = await confirm({
+                                title: "删除配置",
+                                message: `确定要删除 ${preset?.name || config.provider} 的配置吗？`,
+                                confirmText: "删除",
+                                cancelText: "取消",
+                                variant: "danger",
+                              });
+                              if (confirmed) {
                                 deleteAIConfig(config.provider);
                                 loadAllConfigs();
                                 if (config.provider === selectedProvider) {
@@ -281,7 +290,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 {AI_PROVIDER_PRESETS.map((preset) => {
                   const isSelected = selectedProvider === preset.id;
                   let Icon = null;
-                  
+
                   if (preset.id === 'openai') {
                     Icon = SiOpenai;
                   } else if (preset.id === 'claude') {
@@ -289,7 +298,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   } else if (preset.id === 'gemini') {
                     Icon = SiGooglegemini;
                   }
-                  
+
                   return (
                     <button
                       key={preset.id}
@@ -306,12 +315,11 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       `}
                     >
                       {Icon && (
-                        <Icon 
-                          className={`w-4 h-4 ${
-                            preset.id === 'openai' && !isSelected 
-                              ? 'text-black dark:text-white' 
-                              : ''
-                          }`}
+                        <Icon
+                          className={`w-4 h-4 ${preset.id === 'openai' && !isSelected
+                            ? 'text-black dark:text-white'
+                            : ''
+                            }`}
                         />
                       )}
                       {preset.name}
@@ -522,8 +530,15 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             {aiConfig && (
               <div>
                 <button
-                  onClick={() => {
-                    if (confirm('确定要删除此配置吗？')) {
+                  onClick={async () => {
+                    const confirmed = await confirm({
+                      title: "删除配置",
+                      message: "确定要删除此配置吗？",
+                      confirmText: "删除",
+                      cancelText: "取消",
+                      variant: "danger",
+                    });
+                    if (confirmed) {
                       deleteAIConfig(selectedProvider);
                       loadAllConfigs();
                       setAiConfig(null);
@@ -558,12 +573,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 将所有试卷和进度导出为备份文件
               </p>
               <button
-                onClick={() => {
+                onClick={async () => {
                   try {
                     const { exportAllData } = require('@/lib/storage');
                     exportAllData();
                   } catch (error) {
-                    alert('导出失败,请稍后再试');
+                    await alert({
+                      title: "错误",
+                      message: "导出失败,请稍后再试",
+                      variant: "danger",
+                    });
                   }
                 }}
                 className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-[13px] font-medium"
@@ -617,15 +636,30 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 删除所有试卷、进度和设置
               </p>
               <button
-                onClick={() => {
-                  if (confirm('确定要清空所有数据吗?此操作不可恢复!')) {
+                onClick={async () => {
+                  const confirmed = await confirm({
+                    title: "清空数据",
+                    message: "确定要清空所有数据吗?此操作不可恢复!",
+                    confirmText: "清空",
+                    cancelText: "取消",
+                    variant: "danger",
+                  });
+                  if (confirmed) {
                     try {
                       const { clearAllData } = require('@/lib/storage');
                       clearAllData();
-                      alert('数据已清空,刷新页面生效');
+                      await alert({
+                        title: "成功",
+                        message: "数据已清空,刷新页面生效",
+                        variant: "success",
+                      });
                       window.location.reload();
                     } catch (error) {
-                      alert('清空失败,请稍后再试');
+                      await alert({
+                        title: "错误",
+                        message: "清空失败,请稍后再试",
+                        variant: "danger",
+                      });
                     }
                   }
                 }}
@@ -657,7 +691,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
                     选择导入策略
                   </h3>
-                  
+
                   <div className="space-y-3 mb-6">
                     <label className="flex items-start gap-3 p-3 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer transition-colors">
                       <input
@@ -673,7 +707,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                         <div className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-0.5">保留现有数据,添加新的试卷(相同ID跳过)</div>
                       </div>
                     </label>
-                    
+
                     <label className="flex items-start gap-3 p-3 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer transition-colors">
                       <input
                         type="radio"
@@ -706,12 +740,20 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                         importAllData(
                           pendingFile,
                           importStrategy,
-                          () => {
-                            alert('导入成功!刷新页面生效');
+                          async () => {
+                            await alert({
+                              title: "成功",
+                              message: "导入成功!刷新页面生效",
+                              variant: "success",
+                            });
                             window.location.reload();
                           },
-                          (error: string) => {
-                            alert(error);
+                          async (error: string) => {
+                            await alert({
+                              title: "错误",
+                              message: error,
+                              variant: "danger",
+                            });
                           }
                         );
                         setShowStrategyDialog(false);
@@ -880,10 +922,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                     onClick={() => setSelectedCategory(category.id)}
                     className={`
                       w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150
-                      ${
-                        isSelected
-                          ? "bg-zinc-200/70 dark:bg-zinc-800/70 text-zinc-900 dark:text-zinc-100 font-medium shadow-sm"
-                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/40 hover:text-zinc-900 dark:hover:text-zinc-200"
+                      ${isSelected
+                        ? "bg-zinc-200/70 dark:bg-zinc-800/70 text-zinc-900 dark:text-zinc-100 font-medium shadow-sm"
+                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/40 hover:text-zinc-900 dark:hover:text-zinc-200"
                       }
                     `}
                   >
@@ -904,11 +945,10 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap transition-colors ${
-                    isSelected
-                      ? "border-b-2 border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100 font-medium"
-                      : "text-zinc-600 dark:text-zinc-400"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap transition-colors ${isSelected
+                    ? "border-b-2 border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100 font-medium"
+                    : "text-zinc-600 dark:text-zinc-400"
+                    }`}
                 >
                   <Icon className="w-4 h-4" strokeWidth={2} />
                   <span>{category.label}</span>

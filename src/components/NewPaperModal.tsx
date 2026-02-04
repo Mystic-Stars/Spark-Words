@@ -812,7 +812,7 @@ export default function NewPaperModal({
                         <span className="text-xl">📝</span>
                       </div>
                       <p className="text-muted-foreground mb-4">
-                        请先在"导入单词"步骤中生成 Prompt
+                        请先在「导入单词」步骤中生成 Prompt
                       </p>
                       <button
                         onClick={() => setActiveTab("words")}

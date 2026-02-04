@@ -23,6 +23,7 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDialog } from "@/contexts/DialogContext";
 
 export default function Home() {
   const [papers, setPapers] = useState<QuestionSet[]>([]);
@@ -33,6 +34,8 @@ export default function Home() {
   const [newPaperMode, setNewPaperMode] = useState<'manual' | 'ai'>('manual');
   const [editingPaper, setEditingPaper] = useState<QuestionSet | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const { confirm } = useDialog();
 
   // 加载数据
   useEffect(() => {
@@ -85,8 +88,16 @@ export default function Home() {
     setShowNewPaperModal(false);
   };
 
-  const handleDeletePaper = (id: string) => {
-    if (confirm("确定要删除这个试卷吗？")) {
+  const handleDeletePaper = async (id: string) => {
+    const confirmed = await confirm({
+      title: "删除试卷",
+      message: "确定要删除这个试卷吗？此操作不可恢复。",
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       deletePaper(id);
       const updatedPapers = getAllPapers();
       setPapers(updatedPapers);

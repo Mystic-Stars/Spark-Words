@@ -11,6 +11,7 @@ import {
 } from "@/lib/communityApi";
 import { importCommunityPaper } from "@/lib/storage";
 import { CommunityPaperMeta, CommunityPaper } from "@/types/question";
+import { useDialog } from "@/contexts/DialogContext";
 
 interface CommunityLibraryModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ export default function CommunityLibraryModal({
   const [selectedPaper, setSelectedPaper] = useState<CommunityPaper | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
 
+  const { alert } = useDialog();
+
   useEffect(() => {
     if (isOpen) {
       loadCommunityPapers();
@@ -39,15 +42,15 @@ export default function CommunityLibraryModal({
 
   useEffect(() => {
     let result = papers;
-    
+
     if (searchQuery) {
       result = searchCommunityPapers(result, searchQuery);
     }
-    
+
     if (selectedDifficulty) {
       result = filterPapersByDifficulty(result, selectedDifficulty);
     }
-    
+
     setFilteredPapers(result);
   }, [papers, searchQuery, selectedDifficulty]);
 
@@ -73,7 +76,11 @@ export default function CommunityLibraryModal({
       }
     } catch (error) {
       console.error("Failed to preview paper:", error);
-      alert("预览失败，请稍后再试");
+      await alert({
+        title: "错误",
+        message: "预览失败，请稍后再试",
+        variant: "danger",
+      });
     } finally {
       setDownloading(null);
     }
@@ -87,7 +94,11 @@ export default function CommunityLibraryModal({
       // 无感导入，不弹出提示，不刷新页面
     } catch (error) {
       console.error("Failed to import paper:", error);
-      alert("导入失败，请重试");
+      await alert({
+        title: "错误",
+        message: "导入失败，请重试",
+        variant: "danger",
+      });
     }
   };
 
@@ -97,27 +108,27 @@ export default function CommunityLibraryModal({
       intermediate: "bg-zinc-100 text-amber-600 dark:bg-zinc-800 dark:text-amber-500",
       advanced: "bg-zinc-100 text-red-600 dark:bg-zinc-800 dark:text-red-500",
     };
-    
+
     const labels = {
       beginner: "初级",
       intermediate: "中级",
       advanced: "高级",
     };
-    
+
     const color = difficulty ? colors[difficulty as keyof typeof colors] : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
     const label = difficulty ? labels[difficulty as keyof typeof labels] : "未分级";
-    
+
     return <span className={`px-2.5 py-1 rounded-md text-[12px] font-medium ${color}`}>{label}</span>;
   };
 
   // 高亮搜索关键词
   const highlightText = (text: string, query: string) => {
     if (!query.trim()) return text;
-    
+
     const parts = text.split(new RegExp(`(${query})`, 'gi'));
     return (
       <>
-        {parts.map((part, index) => 
+        {parts.map((part, index) =>
           part.toLowerCase() === query.toLowerCase() ? (
             <mark key={index} className="bg-yellow-200 dark:bg-yellow-900/50 text-zinc-900 dark:text-zinc-100 px-0.5 rounded">
               {part}
@@ -141,7 +152,7 @@ export default function CommunityLibraryModal({
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.96, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 20 }}
@@ -187,45 +198,41 @@ export default function CommunityLibraryModal({
               className="w-full pl-9 pr-4 py-2.5 text-[14px] border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-500 transition-all"
             />
           </div>
-          
+
           <div className="flex gap-2.5">
             <button
               onClick={() => setSelectedDifficulty(null)}
-              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
-                selectedDifficulty === null
+              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${selectedDifficulty === null
                   ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                   : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              }`}
+                }`}
             >
               全部
             </button>
             <button
               onClick={() => setSelectedDifficulty("beginner")}
-              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
-                selectedDifficulty === "beginner"
+              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${selectedDifficulty === "beginner"
                   ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                   : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              }`}
+                }`}
             >
               初级
             </button>
             <button
               onClick={() => setSelectedDifficulty("intermediate")}
-              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
-                selectedDifficulty === "intermediate"
+              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${selectedDifficulty === "intermediate"
                   ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                   : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              }`}
+                }`}
             >
               中级
             </button>
             <button
               onClick={() => setSelectedDifficulty("advanced")}
-              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
-                selectedDifficulty === "advanced"
+              className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${selectedDifficulty === "advanced"
                   ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                   : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              }`}
+                }`}
             >
               高级
             </button>
@@ -260,13 +267,13 @@ export default function CommunityLibraryModal({
                     </h3>
                     {getDifficultyBadge(paper.difficulty)}
                   </div>
-                  
+
                   {paper.description && (
                     <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mb-3 line-clamp-2 leading-relaxed">
                       {highlightText(paper.description, searchQuery)}
                     </p>
                   )}
-                  
+
                   <div className="flex items-center gap-3 mb-3 text-[12px] text-zinc-400 dark:text-zinc-500">
                     <span className="flex items-center gap-1.5">
                       <User size={13} strokeWidth={2} />
@@ -277,7 +284,7 @@ export default function CommunityLibraryModal({
                       {paper.questionCount} 题
                     </span>
                   </div>
-                  
+
                   {paper.tags && paper.tags.length > 0 && (
                     <div className="flex gap-1.5 flex-wrap mb-3.5">
                       {paper.tags.slice(0, 3).map((tag, idx) => (
@@ -295,7 +302,7 @@ export default function CommunityLibraryModal({
                       )}
                     </div>
                   )}
-                  
+
                   <button
                     onClick={() => handlePreview(paper)}
                     disabled={downloading === paper.id}
@@ -313,11 +320,11 @@ export default function CommunityLibraryModal({
         {/* Preview Modal */}
         <AnimatePresence>
           {selectedPaper && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
               onClick={() => setSelectedPaper(null)}
             >
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 20 }}
@@ -337,7 +344,7 @@ export default function CommunityLibraryModal({
                     <X className="w-4 h-4" strokeWidth={2} />
                   </button>
                 </div>
-                
+
                 <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
                   <div className="mb-6 space-y-2.5 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg p-4">
                     <p className="text-[14px] text-zinc-600 dark:text-zinc-400">
@@ -353,7 +360,7 @@ export default function CommunityLibraryModal({
                       {selectedPaper.questions.length} 题
                     </p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h4 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100">题目预览</h4>
                     {selectedPaper.questions.slice(0, 5).map((q, idx) => (
@@ -378,7 +385,7 @@ export default function CommunityLibraryModal({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex gap-3">
                   <button
                     onClick={() => setSelectedPaper(null)}
