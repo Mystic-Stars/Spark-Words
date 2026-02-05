@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/github/license/Mystic-Stars/spark-words?style=flat-square)](https://github.com/Mystic-Stars/spark-words/blob/main/LICENSE)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-spark.ghs.red-10b981?style=flat-square&logo=vercel&logoColor=white)](https://spark.ghs.red)
 
-[在线体验](https://spark.ghs.red) · [社区题库](https://github.com/Mystic-Stars/spark-words-community/) · [报告问题](https://github.com/Mystic-Stars/spark-words/issues)
+[在线体验](https://spark.ghs.red) · [社区题库](https://github.com/Mystic-Stars/spark-words-community/) · [报告问题](https://github.com/Mystic-Stars/spark-words/issues) · [English](README.en.md)
 </div>
 
 
